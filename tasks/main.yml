@@ -1,0 +1,78 @@
+---
+# tasks file for roles/acme.sh
+
+- debug: var=ansible_nodename
+
+- name: Ensure dependences installed
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - nginx
+    - curl
+
+- name: Get acme.sh installation status
+  stat:
+    path: /root/.acme.sh
+  register: installed
+
+- name: Install acme.sh
+  shell: curl -s https://get.acme.sh | sh
+  when: installed.stat.islnk is not defined
+
+- name: Present folders
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: 777
+  with_items:
+    - /var/www/{{ ansible_nodename }}
+    - /etc/nginx/ssl
+  register: folders
+
+- name: Monkeypatch for permissions
+  shell: chown -R www-data:www-data /var/www/ && chmod -R 777 /var/www/
+  when: folders.changed
+
+- name: Get info about current ssl state
+  stat:
+    path: "/etc/nginx/ssl/{{ ansible_nodename }}.crt"
+  register: crt
+
+- name: Place template for issue crt
+  template:
+    src: issue.conf
+    dest: "/etc/nginx/sites-enabled/{{ ansible_nodename }}"
+  when: crt.stat.islnk is not defined
+
+- name: Reload nginx
+  service:
+    name: nginx
+    state: reloaded
+  when: crt.stat.islnk is not defined
+
+- name: Testing issue
+  shell: "/root/.acme.sh/acme.sh --test --issue -d {{ ansible_nodename }} -w /var/www/{{ ansible_nodename }} --force"
+  when: crt.stat.islnk is not defined
+
+- name: Issue crt
+  shell: "/root/.acme.sh/acme.sh --issue -d {{ ansible_nodename }} -w /var/www/{{ ansible_nodename }} --force"
+  when: crt.stat.islnk is not defined
+
+- name: Place full template
+  template:
+    src: proxy.conf
+    dest: "/etc/nginx/sites-enabled/{{ ansible_nodename }}"
+  when: crt.stat.islnk is not defined
+
+- name: Install crt
+  shell: "/root/.acme.sh/acme.sh --install-cert -d {{ ansible_nodename }} --key-file /etc/nginx/ssl/{{ ansible_nodename }}.key --fullchain-file /etc/nginx/ssl/{{ ansible_nodename }}.crt --reloadcmd 'systemctl reload nginx'"
+  when: crt.stat.islnk is not defined
+
+
+
+
+
+
