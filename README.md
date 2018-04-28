@@ -1,21 +1,13 @@
 acme.sh
 =========
 
-Provision acme.sh script with sample template installation.
-
-acme.sh will be check on stagging server, you`l have time, if you got errors.
-
-For now working only on debian-based, tested on debian {8,9}
+Provision acme.sh script with sample template installation. Acme issue will be check on stagging server, you will have time, if you got errors.
 
 Requements
 -------------
 
-Normal FQND on target.
-
-Installation
--------------
-
-	ansible-galaxy install -f git+ssh://git@git.33slona.ru:49384/ansible/ansible-roles/acme.sh.git
+- debian-based system
+- Set-uped hostname on target server.
 
 Role Variables
 --------------
@@ -31,10 +23,9 @@ Inventory
 Example Playbook
 ----------------
 
-	---
-	- hosts: es
+	- hosts: servers
 	  roles:
-	     - acme.sh
+	     - egeneralov.acme
 
 
 License
@@ -45,4 +36,4 @@ MIT
 Author Information
 ------------------
 
-Eduard Generalov
+Eduard Generalov <eduard@generalov.net>
