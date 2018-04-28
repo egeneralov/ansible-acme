@@ -4,11 +4,19 @@ galaxy_info:
   company: 33slona.ru
   license: MIT
   min_ansible_version: 1.2
-  #github_branch:
   platforms:
     - name: Debian
       versions:
-        - 8
-        - 9
-  galaxy_tags: []
+        - sid
+        - buster
+        - stretch
+        - jessie
+        - lenny
+  galaxy_tags:
+    - nginx
+    - acme
+    - acme.sh
+    - letsencrypt
+    - ssl
+    - openssl
 dependencies: []
